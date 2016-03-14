@@ -27,8 +27,8 @@
 #include <QMutexLocker>
 #include <QProcess>
 #include <QIcon>
-#include <QDebug>
 #include <QAction>
+#include <QDebug>
 
 #include <KLocalizedString>
 #include <krun.h>
@@ -54,6 +54,8 @@ public:
      : list( 0 )
     {
         vboxdir = QString( getenv( "HOME" ) ) + "/.VirtualBox/";
+        if ( ! QDir(vboxdir).exists( ) )
+            vboxdir = QString( getenv( "HOME" ) ) + "/.config/VirtualBox/";
 
         /* Fill in OS type icon dictionary */
         static const char *kOSTypeIcons [][2] =
@@ -207,7 +209,6 @@ VBoxRunner::VBoxRunner( QObject *parent, const QVariantList& args )
 {
     Q_UNUSED(args);
 
-    qDebug() << "Inicio VBoxRunner";
     rd = new VBoxConfigReader;
     setObjectName( "VirtualBox Machines Runner" );
     setSpeed( AbstractRunner::SlowSpeed );
@@ -222,7 +223,6 @@ VBoxRunner::~VBoxRunner()
 void VBoxRunner::match(Plasma::RunnerContext &context)
 {
     QString request = context.query();
-    qDebug() << "Inicio match" << request;
     if( request.startsWith( "vm ", Qt::CaseInsensitive ) )
         request.remove(0, 3);
     if( request.isEmpty() )
