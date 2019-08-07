@@ -8,8 +8,10 @@ discontinued.
 
 ## Prerequisites (archlinux)
 
-    * sudo pacman -S cmake
-    * sudo pacman -S extra-cmake-modules
+    * Qt5
+    * KF5
+    * cmake. sudo pacman -S cmake
+    * ECM modules. sudo pacman -S extra-cmake-modules
     * gcc compiler
 
 ## Build

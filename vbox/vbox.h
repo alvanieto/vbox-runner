@@ -33,9 +33,9 @@ class VBoxRunner : public Plasma::AbstractRunner
         VBoxRunner(QObject *parent, const QVariantList& args);
         ~VBoxRunner();
 
-        void match(Plasma::RunnerContext &context);
-        void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match);
-        QList<QAction*> actionsForMatch(const Plasma::QueryMatch &match);
+        void match(Plasma::RunnerContext &context) override;
+        void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) override;
+        QList<QAction*> actionsForMatch(const Plasma::QueryMatch &match) override;
 
     private:
         bool isRunning(const QString name);
