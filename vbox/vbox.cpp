@@ -51,7 +51,7 @@ class VBoxConfigReader
     QHash< QString, QIcon > mOsTypeIcons;
 public:
     VBoxConfigReader()
-     : list( 0 )
+     : list( nullptr)
     {
         vboxdir = QString( getenv( "HOME" ) ) + "/.VirtualBox/";
         if ( ! QDir(vboxdir).exists( ) )
@@ -122,17 +122,17 @@ public:
             {"OpenSolaris_64",  "vbox-runner/os_opensolaris_64"},
             {"QNX",             "vbox-runner/os_qnx"},
         };
-        for (uint n = 0; n < sizeof (kOSTypeIcons) / sizeof( kOSTypeIcons[0] ); ++ n)
+        for (auto & kOSTypeIcon : kOSTypeIcons)
         {
-            mOsTypeIcons.insert (kOSTypeIcons [n][0],
-                QIcon::fromTheme (kOSTypeIcons [n][1]));
+            mOsTypeIcons.insert (kOSTypeIcon[0],
+                QIcon::fromTheme (kOSTypeIcon[1]));
         }
     }
 
     ~VBoxConfigReader()
     {
-        if( list ) delete list;
-        list = 0;
+        delete list;
+        list = nullptr;
     }
 
     void updateAsNeccessary()
@@ -141,7 +141,7 @@ public:
         QDir dir( vboxdir );
         if( !list || lastChecked < QFileInfo( dir.filePath( "VirtualBox.xml" ) ).lastModified() )
         {
-            if( list ) delete list;
+            delete list;
             list = new QList< VBoxMachine >;
 
             QFile f( dir.filePath( "VirtualBox.xml" ) );
@@ -178,7 +178,7 @@ public:
                 {
                     QDomNode mnode = _mlist.at( j );
                     VBoxMachine machine;
-                    
+
                     machine.name = mnode.toElement().attribute( "name" );
 
                     QString type = mnode.toElement().attribute( "OSType" );
@@ -205,9 +205,9 @@ public:
 
 VBoxRunner::VBoxRunner( QObject *parent, const QVariantList& args )
     : Plasma::AbstractRunner( parent, args ),
-      rd( 0 )
+      rd( nullptr )
 {
-    Q_UNUSED(args);
+    Q_UNUSED(args)
 
     rd = new VBoxConfigReader;
     setObjectName( "VirtualBox Machines Runner" );
@@ -216,8 +216,8 @@ VBoxRunner::VBoxRunner( QObject *parent, const QVariantList& args )
 
 VBoxRunner::~VBoxRunner()
 {
-    if( rd ) delete rd;
-    rd = 0;
+    delete rd;
+    rd = nullptr;
 }
 
 void VBoxRunner::match(Plasma::RunnerContext &context)
@@ -229,7 +229,7 @@ void VBoxRunner::match(Plasma::RunnerContext &context)
         return;
 
     QList< Plasma::QueryMatch > matches;
-    foreach( VBoxMachine m, rd->machines() )
+    for( const VBoxMachine& m: rd->machines() )
         if( m.name.contains( request, Qt::CaseInsensitive ) )
         {
             Plasma::QueryMatch match( this );
@@ -251,12 +251,12 @@ void VBoxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMa
     Q_UNUSED(context)
 
     if(match.selectedAction() && match.selectedAction()->data() == "headless")
-        KRun::runCommand( QString( "VBoxHeadless -s \"%1\"" ).arg( match.text() ), 0 );
+        KRun::runCommand( QString( "VBoxHeadless -s \"%1\"" ).arg( match.text() ), nullptr );
     else
-        KRun::runCommand( QString( "VBoxManage startvm \"%1\"" ).arg( match.text() ), 0 );
+        KRun::runCommand( QString( "VBoxManage startvm \"%1\"" ).arg( match.text() ), nullptr );
 }
 
-bool VBoxRunner::isRunning(const QString name)
+bool VBoxRunner::isRunning(const QString& name)
 {
     QProcess vbm;
     vbm.start( "VBoxManage", QStringList() << "showvminfo" << "--machinereadable" << name );
@@ -264,7 +264,7 @@ bool VBoxRunner::isRunning(const QString name)
     if(!vbm.waitForFinished(2000)) return false;
 
     QByteArray info(vbm.readAllStandardOutput());
-    foreach(QByteArray line, info.split('\n'))
+    for(const QByteArray &line: info.split('\n'))
     {
         QList<QByteArray> data(line.split('"'));
         if(data[0] == "VMState=")
