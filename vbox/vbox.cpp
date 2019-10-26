@@ -53,9 +53,9 @@ public:
     VBoxConfigReader()
      : list( nullptr)
     {
-        vboxdir = QString( getenv( "HOME" ) ) + "/.VirtualBox/";
-        if ( ! QDir(vboxdir).exists( ) )
-            vboxdir = QString( getenv( "HOME" ) ) + "/.config/VirtualBox/";
+        vboxdir = QDir::homePath() + "/.VirtualBox/";
+        if ( ! QDir(vboxdir).exists() )
+            vboxdir = QDir::homePath() + "/.config/VirtualBox/";
 
         /* Fill in OS type icon dictionary */
         static const char *kOSTypeIcons [][2] =
@@ -154,7 +154,8 @@ public:
             }
 
             QDomNodeList _dnlist = d.elementsByTagName( "MachineEntry" );
-            for( int i = 0; i < _dnlist.count(); i++ )
+            const int _dnlistCount = _dnlist.count();
+            for( int i = 0; i < _dnlistCount; ++i )
             {
                 QDomNode node = _dnlist.at( i );
                 QString ref = node.toElement().attribute( "src" );
@@ -174,7 +175,8 @@ public:
                 }
 
                 QDomNodeList _mlist = mspec.elementsByTagName( "Machine" );
-                for( int j = 0; j < _mlist.count(); j++ )
+                const int _mlistCount =_mlist.count();
+                for( int j = 0; j < _mlistCount; ++j )
                 {
                     QDomNode mnode = _mlist.at( j );
                     VBoxMachine machine;
@@ -275,7 +277,7 @@ bool VBoxRunner::isRunning(const QString& name)
 
 QList<QAction*> VBoxRunner::actionsForMatch(const Plasma::QueryMatch &match)
 {
-    Q_UNUSED(match);
+    Q_UNUSED(match)
 
     QList<QAction*> ret;
 
