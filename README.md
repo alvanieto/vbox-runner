@@ -1,21 +1,29 @@
 # vbox-runner
 Allows you to start your VirtualBox virtual machines from Krunner (Alt-Space) in Plasma 5.
 
-This is a fork from http://kde-apps.org/content/show.php/VBox+Runner?content=107926, because is
+This is a fork from http://kde-apps.org/content/show.php/VBox+Runner?content=107926, because it is
 discontinued.
 
 # Build instructions
 
-## Prerequisites (archlinux)
-
+## Prerequisites 
     * Qt5
     * KF5
-    * cmake. sudo pacman -S cmake
-    * ECM modules. sudo pacman -S extra-cmake-modules
-    * gcc compiler
+
+### Archlinux
+    sudo pacman -S cmake extra-cmake-modules
+
+### Debian/Ubuntu
+    sudo apt install cmake extra-cmake-modules build-essential libkf5runner-dev libkf5textwidgets-dev qtdeclarative5-dev gettext
+    
+### openSUSE
+    sudo zypper install cmake extra-cmake-modules libQt5Widgets5 libQt5Core5 libqt5-qtlocation-devel ki18n-devel ktextwidgets-devel kservice-devel krunner-devel gettext-tools
+
+### Fedora
+    sudo dnf install cmake extra-cmake-modules kf5-ki18n-devel kf5-kservice-devel kf5-krunner-devel kf5-ktextwidgets-devel gettext
 
 ## Build
-
     1. Configure. cmake -S . -B build
     2. Build. cmake --build build
     3. Install. sudo cmake --install build
+    4. Restart Krunner. kquitapp5 krunner; kstart5 --windowclass krunner krunner

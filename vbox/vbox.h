@@ -38,7 +38,7 @@ class VBoxRunner : public Plasma::AbstractRunner
         QList<QAction*> actionsForMatch(const Plasma::QueryMatch &match) override;
 
     private:
-        bool isRunning(const QString name);
+        bool isRunning(const QString& name);
         VBoxConfigReader *rd;
 };
 
