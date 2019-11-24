@@ -27,3 +27,11 @@ discontinued.
     2. Build. cmake --build build
     3. Install. sudo cmake --install build
     4. Restart Krunner. kquitapp5 krunner; kstart5 --windowclass krunner krunner
+
+## Screenshots
+
+#### Overview of virtual machines, they get sorted by the number of launches
+![Overview of virtual machines](https://raw.githubusercontent.com/alex1701c/Screenshots/master/vbox-runner/vm_overview.png)
+
+#### Search for virtual machine
+![Search for virtual machine](https://raw.githubusercontent.com/alex1701c/Screenshots/master/vbox-runner/vm_search.png)

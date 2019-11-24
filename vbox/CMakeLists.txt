@@ -1,6 +1,4 @@
-set(krunner_vbox_SRCS
-    vbox.cpp
-)
+set(krunner_vbox_SRCS vbox.cpp VBoxConfigReader.h)
 
 add_library(krunner_vbox MODULE ${krunner_vbox_SRCS})
 target_link_libraries(krunner_vbox KF5::Runner KF5::Plasma Qt5::Widgets Qt5::Xml
