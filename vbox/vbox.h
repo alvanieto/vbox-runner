@@ -21,25 +21,37 @@
 #define VBOXRUNNER_H
 
 #include <KRunner/AbstractRunner>
+#include "VBoxConfigReader.h"
 
 class VBoxConfigReader;
 
-class VBoxRunner : public Plasma::AbstractRunner
-{
+class VBoxRunner : public Plasma::AbstractRunner {
 
-    Q_OBJECT
+Q_OBJECT
 
-    public:
-        VBoxRunner(QObject *parent, const QVariantList& args);
-        ~VBoxRunner();
+public:
+    VBoxRunner(QObject *parent, const QVariantList &args);
 
-        void match(Plasma::RunnerContext &context) override;
-        void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) override;
-        QList<QAction*> actionsForMatch(const Plasma::QueryMatch &match) override;
+    ~VBoxRunner() override;
 
-    private:
-        bool isRunning(const QString& name);
-        VBoxConfigReader *rd;
+    void match(Plasma::RunnerContext &context) override;
+
+    void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) override;
+
+    QList<QAction *> actionsForMatch(const Plasma::QueryMatch &match) override;
+
+private:
+    bool isRunning(const QString &name);
+
+    VBoxConfigReader *rd;
+    KConfigGroup launchCountConfig;
+    const QRegExp overviewRegex = QRegExp("^vm ?", Qt::CaseInsensitive);
+
+protected Q_SLOTS:
+
+    void init() override;
+
+    void prepareForMatchSession();
 };
 
 K_EXPORT_PLASMA_RUNNER(vbox, VBoxRunner)
