@@ -50,7 +50,10 @@ void VBoxRunner::init() {
     // Custom config file to store the launch counts
     launchCountConfig = KSharedConfig::openConfig(QDir::homePath() + "/.config/krunnerplugins/vboxrunnerrc")->
             group("VBoxRunnerLaunchCounts");
-    connect(this, SIGNAL(prepare()), this, SLOT(prepareForMatchSession()));
+    connect(this, &VBoxRunner::prepare, this, &VBoxRunner::prepareForMatchSession);
+
+    (addAction("vboxheadless", QIcon::fromTheme("vbox-runner/vrdp_16px"), i18n("Start Headless VM")))->setData("headless");
+    (addAction("vboxlaunch", QIcon::fromTheme("vbox-runner/state_running_16px"), i18n("Start VM")))->setData("launch");
 }
 
 void VBoxRunner::prepareForMatchSession() {
@@ -112,11 +115,7 @@ bool VBoxRunner::isRunning(const QString &name) {
 QList<QAction *> VBoxRunner::actionsForMatch(const Plasma::QueryMatch &match) {
     Q_UNUSED(match)
 
-    if (!action("vboxlaunch")) {
-        (addAction("vboxlaunch", QIcon::fromTheme("vbox-runner/state_running_16px"), i18n("Start VM")))->setData("launch");
-        (addAction("vboxheadless", QIcon::fromTheme("vbox-runner/vrdp_16px"), i18n("Start Headless VM")))->setData("headless");
-    }
-    return QList<QAction *>({action("vboxlaunch"), action("vboxheadless")});
+    return QList<QAction *>({action("vboxheadless"), action("vboxlaunch")});
 }
 
 #include "moc_vbox.cpp"
