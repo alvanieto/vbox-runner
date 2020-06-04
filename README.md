@@ -14,7 +14,7 @@ discontinued.
     sudo pacman -S cmake extra-cmake-modules
 
 ### Debian/Ubuntu
-    sudo apt install cmake extra-cmake-modules build-essential libkf5runner-dev libkf5textwidgets-dev qtdeclarative5-dev gettext
+    sudo apt install cmake extra-cmake-modules build-essential libkf5runner-dev libkf5kio-dev libkf5textwidgets-dev qtdeclarative5-dev gettext
     
 ### openSUSE
     sudo zypper install cmake extra-cmake-modules libQt5Widgets5 libQt5Core5 libqt5-qtlocation-devel ki18n-devel ktextwidgets-devel kservice-devel krunner-devel gettext-tools
@@ -23,9 +23,9 @@ discontinued.
     sudo dnf install cmake extra-cmake-modules kf5-ki18n-devel kf5-kservice-devel kf5-krunner-devel kf5-ktextwidgets-devel gettext
 
 ## Build
-    1. Configure. cmake -S . -B build
-    2. Build. cmake --build build
-    3. Install. sudo cmake --install build
+    1. Configure -> cmake .
+    2. Build -> make
+    3. Install -> sudo make install
     4. Restart Krunner. kquitapp5 krunner; kstart5 --windowclass krunner krunner
 
 ## Screenshots
