@@ -21,7 +21,6 @@
 #define VBOXRUNNER_H
 
 #include <KRunner/AbstractRunner>
-#include "VBoxConfigReader.h"
 
 class VBoxConfigReader;
 
@@ -53,7 +52,5 @@ protected Q_SLOTS:
 
     void prepareForMatchSession();
 };
-
-K_EXPORT_PLASMA_RUNNER(vbox, VBoxRunner)
 
 #endif

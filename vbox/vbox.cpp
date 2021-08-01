@@ -35,6 +35,9 @@
 #include <krun.h>
 
 #include "vbox.h"
+#include "VBoxConfigReader.h"
+
+K_EXPORT_PLASMA_RUNNER_WITH_JSON(VBoxRunner, "vbox.json")
 
 VBoxRunner::VBoxRunner(QObject *parent, const QVariantList &args)
         : Plasma::AbstractRunner(parent, args),
@@ -118,4 +121,4 @@ QList<QAction *> VBoxRunner::actionsForMatch(const Plasma::QueryMatch &match) {
     return QList<QAction *>({action("vboxheadless"), action("vboxlaunch")});
 }
 
-#include "moc_vbox.cpp"
+#include "vbox.moc"
