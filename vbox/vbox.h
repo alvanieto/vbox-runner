@@ -44,6 +44,7 @@ private:
 
     VBoxConfigReader *rd;
     KConfigGroup launchCountConfig;
+    QList<QAction *> m_actions;
     const QRegExp overviewRegex = QRegExp("^vm ?", Qt::CaseInsensitive);
 
 protected Q_SLOTS:

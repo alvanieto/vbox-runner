@@ -55,8 +55,11 @@ void VBoxRunner::init() {
             group("VBoxRunnerLaunchCounts");
     connect(this, &VBoxRunner::prepare, this, &VBoxRunner::prepareForMatchSession);
 
-    (addAction("vboxheadless", QIcon::fromTheme("vbox-runner/vrdp_16px"), i18n("Start Headless VM")))->setData("headless");
-    (addAction("vboxlaunch", QIcon::fromTheme("vbox-runner/state_running_16px"), i18n("Start VM")))->setData("launch");
+    auto headlessAction = new QAction(QIcon::fromTheme("vbox-runner/vrdp_16px"), i18n("Start Headless VM"));
+    headlessAction->setData("headless");
+    auto launchAction = addAction("vboxlaunch", QIcon::fromTheme("vbox-runner/state_running_16px"), i18n("Start VM"));
+    launchAction->setData("launch");
+    m_actions = {headlessAction, launchAction};
 }
 
 void VBoxRunner::prepareForMatchSession() {
@@ -118,7 +121,7 @@ bool VBoxRunner::isRunning(const QString &name) {
 QList<QAction *> VBoxRunner::actionsForMatch(const Plasma::QueryMatch &match) {
     Q_UNUSED(match)
 
-    return QList<QAction *>({action("vboxheadless"), action("vboxlaunch")});
+    return m_actions;
 }
 
 #include "vbox.moc"
