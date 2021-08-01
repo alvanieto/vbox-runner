@@ -74,7 +74,7 @@ void VBoxRunner::match(Plasma::RunnerContext &context) {
     if (request.contains(overviewRegex))
         request = request.remove(overviewRegex);
 
-    const int totalLaunches = launchCountConfig.readEntry("launches", "0").toInt();
+    const int totalLaunches = launchCountConfig.readEntry("launches", 0);
     for (const VBoxMachine &m: *rd->list)
         if (m.name.contains(request, Qt::CaseInsensitive)) {
             Plasma::QueryMatch match(this);
@@ -93,8 +93,8 @@ void VBoxRunner::match(Plasma::RunnerContext &context) {
 
 void VBoxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) {
     Q_UNUSED(context)
-    launchCountConfig.writeEntry("launches", launchCountConfig.readEntry("launches", "0").toInt() + 1);
-    launchCountConfig.writeEntry(match.text(), launchCountConfig.readEntry(match.text(), "0").toInt() + 1);
+    launchCountConfig.writeEntry("launches", launchCountConfig.readEntry("launches", 0) + 1);
+    launchCountConfig.writeEntry(match.text(), launchCountConfig.readEntry(match.text(), 0) + 1);
     if (match.selectedAction() && match.selectedAction()->data() == "headless")
         KRun::runCommand(QString("VBoxHeadless -s \"%1\"").arg(match.text()), nullptr);
     else
