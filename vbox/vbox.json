@@ -14,11 +14,7 @@
         "Id": "krunner_vbox",
         "License": "GPL",
         "Name": "VirtualBox Runner",
-        "ServiceTypes": [
-            "Plasma/Runner"
-        ],
         "Version": "0.4.2",
         "Website": "https://github.com/alvanieto/vbox-runner"
-    },
-    "X-Plasma-AdvertiseSingleRunnerQueryMode": true
+    }
 }
