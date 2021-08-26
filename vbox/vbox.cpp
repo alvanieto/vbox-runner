@@ -35,6 +35,9 @@
 #include <krun.h>
 
 #include "vbox.h"
+#include "VBoxConfigReader.h"
+
+K_EXPORT_PLASMA_RUNNER_WITH_JSON(VBoxRunner, "vbox.json")
 
 VBoxRunner::VBoxRunner(QObject *parent, const QVariantList &args)
         : Plasma::AbstractRunner(parent, args),
@@ -50,7 +53,13 @@ void VBoxRunner::init() {
     // Custom config file to store the launch counts
     launchCountConfig = KSharedConfig::openConfig(QDir::homePath() + "/.config/krunnerplugins/vboxrunnerrc")->
             group("VBoxRunnerLaunchCounts");
-    connect(this, SIGNAL(prepare()), this, SLOT(prepareForMatchSession()));
+    connect(this, &VBoxRunner::prepare, this, &VBoxRunner::prepareForMatchSession);
+
+    auto headlessAction = new QAction(QIcon::fromTheme("vbox-runner/vrdp_16px"), i18n("Start Headless VM"));
+    headlessAction->setData("headless");
+    auto launchAction = addAction("vboxlaunch", QIcon::fromTheme("vbox-runner/state_running_16px"), i18n("Start VM"));
+    launchAction->setData("launch");
+    m_actions = {headlessAction, launchAction};
 }
 
 void VBoxRunner::prepareForMatchSession() {
@@ -68,7 +77,7 @@ void VBoxRunner::match(Plasma::RunnerContext &context) {
     if (request.contains(overviewRegex))
         request = request.remove(overviewRegex);
 
-    const int totalLaunches = launchCountConfig.readEntry("launches", "0").toInt();
+    const int totalLaunches = launchCountConfig.readEntry("launches", 0);
     for (const VBoxMachine &m: *rd->list)
         if (m.name.contains(request, Qt::CaseInsensitive)) {
             Plasma::QueryMatch match(this);
@@ -87,8 +96,8 @@ void VBoxRunner::match(Plasma::RunnerContext &context) {
 
 void VBoxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) {
     Q_UNUSED(context)
-    launchCountConfig.writeEntry("launches", launchCountConfig.readEntry("launches", "0").toInt() + 1);
-    launchCountConfig.writeEntry(match.text(), launchCountConfig.readEntry(match.text(), "0").toInt() + 1);
+    launchCountConfig.writeEntry("launches", launchCountConfig.readEntry("launches", 0) + 1);
+    launchCountConfig.writeEntry(match.text(), launchCountConfig.readEntry(match.text(), 0) + 1);
     if (match.selectedAction() && match.selectedAction()->data() == "headless")
         KRun::runCommand(QString("VBoxHeadless -s \"%1\"").arg(match.text()), nullptr);
     else
@@ -112,11 +121,7 @@ bool VBoxRunner::isRunning(const QString &name) {
 QList<QAction *> VBoxRunner::actionsForMatch(const Plasma::QueryMatch &match) {
     Q_UNUSED(match)
 
-    if (!action("vboxlaunch")) {
-        (addAction("vboxlaunch", QIcon::fromTheme("vbox-runner/state_running_16px"), i18n("Start VM")))->setData("launch");
-        (addAction("vboxheadless", QIcon::fromTheme("vbox-runner/vrdp_16px"), i18n("Start Headless VM")))->setData("headless");
-    }
-    return QList<QAction *>({action("vboxlaunch"), action("vboxheadless")});
+    return m_actions;
 }
 
-#include "moc_vbox.cpp"
+#include "vbox.moc"

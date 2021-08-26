@@ -21,7 +21,6 @@
 #define VBOXRUNNER_H
 
 #include <KRunner/AbstractRunner>
-#include "VBoxConfigReader.h"
 
 class VBoxConfigReader;
 
@@ -45,6 +44,7 @@ private:
 
     VBoxConfigReader *rd;
     KConfigGroup launchCountConfig;
+    QList<QAction *> m_actions;
     const QRegExp overviewRegex = QRegExp("^vm ?", Qt::CaseInsensitive);
 
 protected Q_SLOTS:
@@ -53,7 +53,5 @@ protected Q_SLOTS:
 
     void prepareForMatchSession();
 };
-
-K_EXPORT_PLASMA_RUNNER(vbox, VBoxRunner)
 
 #endif

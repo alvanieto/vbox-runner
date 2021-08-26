@@ -1,0 +1,20 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "alvaro.nieto@gmail.com",
+                "Name": "Alvaro Nieto Gil"
+            }
+        ],
+        "Description": "Start VirtualBox virtual machines",
+        "Description[es]": "Lanzador de máquinas virtuales VirtualBox",
+        "Description[ru]": "Запускает виртуальные машины VirtualBox",
+        "EnabledByDefault": true,
+        "Icon": "virtualbox-ose",
+        "Id": "krunner_vbox",
+        "License": "GPL",
+        "Name": "VirtualBox Runner",
+        "Version": "0.4.2",
+        "Website": "https://github.com/alvanieto/vbox-runner"
+    }
+}
