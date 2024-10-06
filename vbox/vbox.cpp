@@ -30,36 +30,45 @@
 #include <QAction>
 #include <QDebug>
 #include <KSharedConfig>
+#include <krunner_version.h>
 
 #include <KLocalizedString>
-#include <krun.h>
 
 #include "vbox.h"
 #include "VBoxConfigReader.h"
 
-K_EXPORT_PLASMA_RUNNER_WITH_JSON(VBoxRunner, "vbox.json")
+K_PLUGIN_CLASS_WITH_JSON(VBoxRunner, "vbox.json")
 
-VBoxRunner::VBoxRunner(QObject *parent, const QVariantList &args)
-        : Plasma::AbstractRunner(parent, args),
+VBoxRunner::VBoxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
+#if KRUNNER_VERSION_MAJOR == 6
+        : KRunner::AbstractRunner(parent, data),
+#else
+        : KRunner::AbstractRunner(parent, data, args),
+#endif
           rd(nullptr) {
+#if KRUNNER_VERSION_MAJOR == 6
     Q_UNUSED(args)
-
+#endif
     rd = new VBoxConfigReader;
-    setObjectName("VirtualBox Machines Runner");
-    setSpeed(AbstractRunner::SlowSpeed);
 }
 
 void VBoxRunner::init() {
     // Custom config file to store the launch counts
-    launchCountConfig = KSharedConfig::openConfig(QDir::homePath() + "/.config/krunnerplugins/vboxrunnerrc")->
-            group("VBoxRunnerLaunchCounts");
+    launchCountConfig = KSharedConfig::openConfig(QDir::homePath() + "/.config/krunnerplugins/vboxrunnerrc")->group("VBoxRunnerLaunchCounts");
     connect(this, &VBoxRunner::prepare, this, &VBoxRunner::prepareForMatchSession);
 
+#if KRUNNER_VERSION_MAJOR == 6
+    KRunner::Action headlessAction("headless", "vbox-runner/vrdp_16px", i18n("Start Headless VM"));
+    KRunner::Action launchAction("vboxlaunch", "vbox-runner/state_running_16px", i18n("Start VM"));
+    m_actions = {headlessAction, launchAction};
+#else
     auto headlessAction = new QAction(QIcon::fromTheme("vbox-runner/vrdp_16px"), i18n("Start Headless VM"));
     headlessAction->setData("headless");
     auto launchAction = addAction("vboxlaunch", QIcon::fromTheme("vbox-runner/state_running_16px"), i18n("Start VM"));
     launchAction->setData("launch");
     m_actions = {headlessAction, launchAction};
+#endif
+
 }
 
 void VBoxRunner::prepareForMatchSession() {
@@ -72,7 +81,7 @@ VBoxRunner::~VBoxRunner() {
     rd = nullptr;
 }
 
-void VBoxRunner::match(Plasma::RunnerContext &context) {
+void VBoxRunner::match(KRunner::RunnerContext &context) {
     QString request = context.query();
     if (request.contains(overviewRegex))
         request = request.remove(overviewRegex);
@@ -80,9 +89,9 @@ void VBoxRunner::match(Plasma::RunnerContext &context) {
     const int totalLaunches = launchCountConfig.readEntry("launches", 0);
     for (const VBoxMachine &m: *rd->list)
         if (m.name.contains(request, Qt::CaseInsensitive)) {
-            Plasma::QueryMatch match(this);
+            KRunner::QueryMatch match(this);
             match.setType(request.compare(m.name, Qt::CaseInsensitive) ?
-                          Plasma::QueryMatch::PossibleMatch : Plasma::QueryMatch::ExactMatch);
+                          KRunner::QueryMatch::PossibleMatch : KRunner::QueryMatch::ExactMatch);
             match.setIcon(m.icon);
             match.setText(m.name);
 #ifdef SHOW_RUNNING_STATE
@@ -94,7 +103,7 @@ void VBoxRunner::match(Plasma::RunnerContext &context) {
         }
 }
 
-void VBoxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) {
+void VBoxRunner::run(const KRunner::RunnerContext &context, const Plasma::QueryMatch &match) {
     Q_UNUSED(context)
     launchCountConfig.writeEntry("launches", launchCountConfig.readEntry("launches", 0) + 1);
     launchCountConfig.writeEntry(match.text(), launchCountConfig.readEntry(match.text(), 0) + 1);
@@ -116,12 +125,6 @@ bool VBoxRunner::isRunning(const QString &name) {
         if (data[0] == "VMState=") return data[1] != "poweroff";
     }
     return false;
-}
-
-QList<QAction *> VBoxRunner::actionsForMatch(const Plasma::QueryMatch &match) {
-    Q_UNUSED(match)
-
-    return m_actions;
 }
 
 #include "vbox.moc"

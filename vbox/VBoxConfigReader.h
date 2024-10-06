@@ -1,6 +1,10 @@
 #ifndef VBOXRUNNERS_VBOXCONFIGREADER_H
 #define VBOXRUNNERS_VBOXCONFIGREADER_H
 
+#include <QString>
+#include <QIcon>
+#include <QDir>
+
 struct VBoxMachine {
     QString name;
     QIcon icon;

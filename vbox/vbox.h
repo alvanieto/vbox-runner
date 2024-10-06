@@ -21,31 +21,41 @@
 #define VBOXRUNNER_H
 
 #include <KRunner/AbstractRunner>
+#include <KConfigGroup>
+#include <krunner_version.h>
+
+#if KRUNNER_VERSION_MAJOR == 6
+#include <KRunner/Action>
+#else
+#include <QAction>
+#endif
 
 class VBoxConfigReader;
+class QAction;
 
-class VBoxRunner : public Plasma::AbstractRunner {
-
+class VBoxRunner : public KRunner::AbstractRunner {
 Q_OBJECT
 
 public:
-    VBoxRunner(QObject *parent, const QVariantList &args);
+    VBoxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args);
 
     ~VBoxRunner() override;
 
-    void match(Plasma::RunnerContext &context) override;
-
-    void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) override;
-
-    QList<QAction *> actionsForMatch(const Plasma::QueryMatch &match) override;
+    void match(KRunner::RunnerContext &context) override;
+    void run(const KRunner::RunnerContext &context, const KRunner::QueryMatch &match) override;
 
 private:
     bool isRunning(const QString &name);
 
     VBoxConfigReader *rd;
     KConfigGroup launchCountConfig;
+    #if KRUNNER_VERSION_MAJOR == 5
     QList<QAction *> m_actions;
-    const QRegExp overviewRegex = QRegExp("^vm ?", Qt::CaseInsensitive);
+#else
+    KRunner::Actions m_actions;
+#endif
+
+    const QRegularExpression overviewRegex{QStringLiteral("^vm ?")};
 
 protected Q_SLOTS:
 
