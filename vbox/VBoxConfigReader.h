@@ -112,6 +112,7 @@ public:
             list.clear();
 
             QFile f(dir.filePath("VirtualBox.xml"));
+            f.open(QIODevice::ReadOnly);
 
             QDomDocument d;
             if (!d.setContent(&f)) {
@@ -130,6 +131,7 @@ public:
                 }
 
                 QFile m(dir.filePath(ref));
+                m.open(QIODevice::ReadOnly);
 
                 QDomDocument mspec;
                 if (!mspec.setContent(&m)) {
