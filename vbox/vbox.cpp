@@ -20,7 +20,7 @@
  */
 
 #include <QDir>
-#include <QtXml/QDomDocument>
+#include <QDomDocument>
 #include <QFile>
 #include <QFileInfo>
 #include <QHash>
@@ -30,6 +30,7 @@
 #include <QAction>
 #include <QDebug>
 #include <KSharedConfig>
+#include <KIO/CommandLauncherJob>
 #include <krunner_version.h>
 
 #include <KLocalizedString>
@@ -90,8 +91,13 @@ void VBoxRunner::match(KRunner::RunnerContext &context) {
     for (const VBoxMachine &m: *rd->list)
         if (m.name.contains(request, Qt::CaseInsensitive)) {
             KRunner::QueryMatch match(this);
+#if KRUNNER_VERSION_MAJOR == 6
+            match.setCategoryRelevance(request.compare(m.name, Qt::CaseInsensitive) ?
+                          KRunner::QueryMatch::CategoryRelevance::Highest : KRunner::QueryMatch::CategoryRelevance::High);
+#else
             match.setType(request.compare(m.name, Qt::CaseInsensitive) ?
                           KRunner::QueryMatch::PossibleMatch : KRunner::QueryMatch::ExactMatch);
+#endif
             match.setIcon(m.icon);
             match.setText(m.name);
 #ifdef SHOW_RUNNING_STATE
@@ -103,14 +109,22 @@ void VBoxRunner::match(KRunner::RunnerContext &context) {
         }
 }
 
-void VBoxRunner::run(const KRunner::RunnerContext &context, const Plasma::QueryMatch &match) {
+void VBoxRunner::run(const KRunner::RunnerContext &context, const KRunner::QueryMatch &match) {
     Q_UNUSED(context)
     launchCountConfig.writeEntry("launches", launchCountConfig.readEntry("launches", 0) + 1);
     launchCountConfig.writeEntry(match.text(), launchCountConfig.readEntry(match.text(), 0) + 1);
+    QString command;
+#if KRUNNER_VERSION_MAJOR == 6
+    if (match.selectedAction() && match.selectedAction().id() == "headless")
+#else
     if (match.selectedAction() && match.selectedAction()->data() == "headless")
-        KRun::runCommand(QString("VBoxHeadless -s \"%1\"").arg(match.text()), nullptr);
-    else
-        KRun::runCommand(QString("VBoxManage startvm \"%1\"").arg(match.text()), nullptr);
+#endif
+        command = QString("VBoxHeadless -s \"%1\"").arg(match.text());
+    else {
+        command = QString("VBoxManage startvm \"%1\"").arg(match.text());
+    }
+    KIO::CommandLauncherJob *job = new KIO::CommandLauncherJob(command, this);
+    job->start();
 }
 
 bool VBoxRunner::isRunning(const QString &name) {

@@ -11,7 +11,6 @@
         "Description[ru]": "Запускает виртуальные машины VirtualBox",
         "EnabledByDefault": true,
         "Icon": "virtualbox-ose",
-        "Id": "krunner_vbox",
         "License": "GPL",
         "Name": "VirtualBox Runner",
         "Version": "0.4.2",
