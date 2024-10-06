@@ -42,6 +42,7 @@ public:
 
     void match(KRunner::RunnerContext &context) override;
     void run(const KRunner::RunnerContext &context, const KRunner::QueryMatch &match) override;
+    void init() override;
 
 private:
     bool isRunning(const QString &name);
@@ -55,10 +56,6 @@ private:
 #endif
 
     const QRegularExpression overviewRegex{QStringLiteral("^vm ?")};
-
-protected Q_SLOTS:
-
-    void init() override;
 
     void prepareForMatchSession();
 };

@@ -56,7 +56,9 @@ void VBoxRunner::init()
 {
     // Custom config file to store the launch counts
     launchCountConfig = KSharedConfig::openConfig(QDir::homePath() + "/.config/krunnerplugins/vboxrunnerrc")->group("VBoxRunnerLaunchCounts");
-    connect(this, &VBoxRunner::prepare, this, &VBoxRunner::prepareForMatchSession);
+    connect(this, &VBoxRunner::prepare, this, [this]() {
+        rd.updateAsNeccessary();
+    });
 
 #if KRUNNER_VERSION_MAJOR == 6
     KRunner::Action headlessAction("headless", "vbox-runner/vrdp_16px", i18n("Start Headless VM"));
@@ -69,12 +71,6 @@ void VBoxRunner::init()
     launchAction->setData("launch");
     m_actions = {headlessAction, launchAction};
 #endif
-}
-
-void VBoxRunner::prepareForMatchSession()
-{
-    // Does not have to be thread save
-    rd.updateAsNeccessary();
 }
 
 void VBoxRunner::match(KRunner::RunnerContext &context)
