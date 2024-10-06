@@ -20,8 +20,9 @@
 #ifndef VBOXRUNNER_H
 #define VBOXRUNNER_H
 
-#include <KRunner/AbstractRunner>
+#include "VBoxConfigReader.h"
 #include <KConfigGroup>
+#include <KRunner/AbstractRunner>
 #include <krunner_version.h>
 
 #if KRUNNER_VERSION_MAJOR == 6
@@ -30,16 +31,14 @@
 #include <QAction>
 #endif
 
-class VBoxConfigReader;
 class QAction;
 
-class VBoxRunner : public KRunner::AbstractRunner {
-Q_OBJECT
+class VBoxRunner : public KRunner::AbstractRunner
+{
+    Q_OBJECT
 
 public:
     VBoxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args);
-
-    ~VBoxRunner() override;
 
     void match(KRunner::RunnerContext &context) override;
     void run(const KRunner::RunnerContext &context, const KRunner::QueryMatch &match) override;
@@ -47,9 +46,9 @@ public:
 private:
     bool isRunning(const QString &name);
 
-    VBoxConfigReader *rd;
+    VBoxConfigReader rd;
     KConfigGroup launchCountConfig;
-    #if KRUNNER_VERSION_MAJOR == 5
+#if KRUNNER_VERSION_MAJOR == 5
     QList<QAction *> m_actions;
 #else
     KRunner::Actions m_actions;

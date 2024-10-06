@@ -43,17 +43,13 @@ K_PLUGIN_CLASS_WITH_JSON(VBoxRunner, "vbox.json")
 VBoxRunner::VBoxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
 #if KRUNNER_VERSION_MAJOR == 6
     : KRunner::AbstractRunner(parent, data)
-    ,
 #else
     : KRunner::AbstractRunner(parent, data, args)
-    ,
 #endif
-    rd(nullptr)
 {
 #if KRUNNER_VERSION_MAJOR == 6
     Q_UNUSED(args)
 #endif
-    rd = new VBoxConfigReader;
 }
 
 void VBoxRunner::init()
@@ -78,13 +74,7 @@ void VBoxRunner::init()
 void VBoxRunner::prepareForMatchSession()
 {
     // Does not have to be thread save
-    rd->updateAsNeccessary();
-}
-
-VBoxRunner::~VBoxRunner()
-{
-    delete rd;
-    rd = nullptr;
+    rd.updateAsNeccessary();
 }
 
 void VBoxRunner::match(KRunner::RunnerContext &context)
@@ -94,7 +84,7 @@ void VBoxRunner::match(KRunner::RunnerContext &context)
         request = request.remove(overviewRegex);
 
     const int totalLaunches = launchCountConfig.readEntry("launches", 0);
-    for (const VBoxMachine &m : *rd->list)
+    for (const VBoxMachine &m : rd.list)
         if (m.name.contains(request, Qt::CaseInsensitive)) {
             KRunner::QueryMatch match(this);
 #if KRUNNER_VERSION_MAJOR == 6
@@ -150,4 +140,5 @@ bool VBoxRunner::isRunning(const QString &name)
     return false;
 }
 
+#include "moc_vbox.cpp"
 #include "vbox.moc"

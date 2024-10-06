@@ -20,9 +20,8 @@ class VBoxConfigReader
     QHash<QString, QIcon> mOsTypeIcons;
 
 public:
-    QList<VBoxMachine> *list;
+    QList<VBoxMachine> list;
     VBoxConfigReader()
-        : list(new QList<VBoxMachine>())
     {
         vboxdir = QDir::homePath() + "/.VirtualBox/";
         if (!QDir(vboxdir).exists())
@@ -104,15 +103,13 @@ public:
 
     ~VBoxConfigReader()
     {
-        delete list;
-        list = nullptr;
     }
 
     void updateAsNeccessary()
     {
         QDir dir(vboxdir);
         if (lastChecked < QFileInfo(dir.filePath("VirtualBox.xml")).lastModified()) {
-            list->clear();
+            list.clear();
 
             QFile f(dir.filePath("VirtualBox.xml"));
 
@@ -148,7 +145,7 @@ public:
                     machine.name = mnode.toElement().attribute("name");
                     const QString type = mnode.toElement().attribute("OSType");
                     machine.icon = mOsTypeIcons.contains(type) ? mOsTypeIcons[type] : QIcon::fromTheme("virtualbox-ose");
-                    list->append(machine);
+                    list.append(machine);
                 }
             }
 
