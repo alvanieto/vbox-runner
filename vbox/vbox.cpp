@@ -69,7 +69,7 @@ void VBoxRunner::init()
 #else
     auto headlessAction = new QAction(QIcon::fromTheme("vbox-runner/vrdp_16px"), i18n("Start Headless VM"));
     headlessAction->setData("headless");
-    auto launchAction = addAction("vboxlaunch", QIcon::fromTheme("vbox-runner/state_running_16px"), i18n("Start VM"));
+    auto launchAction = new QAction(QIcon::fromTheme("vbox-runner/state_running_16px"), i18n("Start VM"));
     launchAction->setData("launch");
     m_actions = {headlessAction, launchAction};
 #endif

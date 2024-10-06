@@ -1,7 +1,9 @@
 #ifndef VBOXRUNNERS_VBOXCONFIGREADER_H
 #define VBOXRUNNERS_VBOXCONFIGREADER_H
 
+#include <QDateTime>
 #include <QDir>
+#include <QDomDocument>
 #include <QIcon>
 #include <QString>
 
