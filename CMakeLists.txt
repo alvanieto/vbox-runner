@@ -14,7 +14,7 @@ find_package(KF${QT_MAJOR_VERSION} ${KF_MIN_VERSION} REQUIRED COMPONENTS KIO I18
 include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDECompilerSettings)
-
+include(KDEClangFormat)
 include(ECMDeprecationSettings)
 ecm_set_disabled_deprecation_versions(
 	KF ${KF_MIN_VERSION}
