@@ -19,109 +19,122 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include <KIO/CommandLauncherJob>
+#include <KSharedConfig>
+#include <QAction>
+#include <QDebug>
 #include <QDir>
-#include <QtXml/QDomDocument>
+#include <QDomDocument>
 #include <QFile>
 #include <QFileInfo>
 #include <QHash>
+#include <QIcon>
 #include <QMutexLocker>
 #include <QProcess>
-#include <QIcon>
-#include <QAction>
-#include <QDebug>
-#include <KSharedConfig>
+#include <krunner_version.h>
 
 #include <KLocalizedString>
-#include <krun.h>
 
-#include "vbox.h"
 #include "VBoxConfigReader.h"
+#include "vbox.h"
 
-K_EXPORT_PLASMA_RUNNER_WITH_JSON(VBoxRunner, "vbox.json")
+K_PLUGIN_CLASS_WITH_JSON(VBoxRunner, "vbox.json")
 
-VBoxRunner::VBoxRunner(QObject *parent, const QVariantList &args)
-        : Plasma::AbstractRunner(parent, args),
-          rd(nullptr) {
+VBoxRunner::VBoxRunner(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
+#if KRUNNER_VERSION_MAJOR == 6
+    : KRunner::AbstractRunner(parent, data)
+#else
+    : KRunner::AbstractRunner(parent, data, args)
+#endif
+{
+#if KRUNNER_VERSION_MAJOR == 6
     Q_UNUSED(args)
-
-    rd = new VBoxConfigReader;
-    setObjectName("VirtualBox Machines Runner");
-    setSpeed(AbstractRunner::SlowSpeed);
+#endif
 }
 
-void VBoxRunner::init() {
+void VBoxRunner::init()
+{
     // Custom config file to store the launch counts
-    launchCountConfig = KSharedConfig::openConfig(QDir::homePath() + "/.config/krunnerplugins/vboxrunnerrc")->
-            group("VBoxRunnerLaunchCounts");
-    connect(this, &VBoxRunner::prepare, this, &VBoxRunner::prepareForMatchSession);
+    launchCountConfig = KSharedConfig::openConfig(QDir::homePath() + "/.config/krunnerplugins/vboxrunnerrc")->group("VBoxRunnerLaunchCounts");
+    connect(this, &VBoxRunner::prepare, this, [this]() {
+        rd.updateAsNeccessary();
+    });
 
+#if KRUNNER_VERSION_MAJOR == 6
+    KRunner::Action headlessAction("headless", "vbox-runner/vrdp_16px", i18n("Start Headless VM"));
+    KRunner::Action launchAction("vboxlaunch", "vbox-runner/state_running_16px", i18n("Start VM"));
+    m_actions = {headlessAction, launchAction};
+#else
     auto headlessAction = new QAction(QIcon::fromTheme("vbox-runner/vrdp_16px"), i18n("Start Headless VM"));
     headlessAction->setData("headless");
-    auto launchAction = addAction("vboxlaunch", QIcon::fromTheme("vbox-runner/state_running_16px"), i18n("Start VM"));
+    auto launchAction = new QAction(QIcon::fromTheme("vbox-runner/state_running_16px"), i18n("Start VM"));
     launchAction->setData("launch");
     m_actions = {headlessAction, launchAction};
+#endif
 }
 
-void VBoxRunner::prepareForMatchSession() {
-    // Does not have to be thread save
-    rd->updateAsNeccessary();
-}
-
-VBoxRunner::~VBoxRunner() {
-    delete rd;
-    rd = nullptr;
-}
-
-void VBoxRunner::match(Plasma::RunnerContext &context) {
+void VBoxRunner::match(KRunner::RunnerContext &context)
+{
     QString request = context.query();
     if (request.contains(overviewRegex))
         request = request.remove(overviewRegex);
 
     const int totalLaunches = launchCountConfig.readEntry("launches", 0);
-    for (const VBoxMachine &m: *rd->list)
+    for (const VBoxMachine &m : rd.list)
         if (m.name.contains(request, Qt::CaseInsensitive)) {
-            Plasma::QueryMatch match(this);
-            match.setType(request.compare(m.name, Qt::CaseInsensitive) ?
-                          Plasma::QueryMatch::PossibleMatch : Plasma::QueryMatch::ExactMatch);
+            KRunner::QueryMatch match(this);
+#if KRUNNER_VERSION_MAJOR == 6
+            match.setCategoryRelevance(request.compare(m.name, Qt::CaseInsensitive) //
+                                           ? KRunner::QueryMatch::CategoryRelevance::Highest
+                                           : KRunner::QueryMatch::CategoryRelevance::High);
+#else
+            match.setType(request.compare(m.name, Qt::CaseInsensitive) ? KRunner::QueryMatch::PossibleMatch : KRunner::QueryMatch::ExactMatch);
+#endif
             match.setIcon(m.icon);
             match.setText(m.name);
 #ifdef SHOW_RUNNING_STATE
-            match.setSubtext( isRunning(m.name)? i18n( "VirtualBox virtual machine (running)" )
-                                             : i18n( "VirtualBox virtual machine (stopped)" ) );
+            match.setSubtext(isRunning(m.name) ? i18n("VirtualBox virtual machine (running)") : i18n("VirtualBox virtual machine (stopped)"));
 #endif
-            match.setRelevance((double) launchCountConfig.readEntry(m.name).toInt() / totalLaunches);
+            match.setRelevance((double)launchCountConfig.readEntry(m.name).toInt() / totalLaunches);
             context.addMatch(match);
         }
 }
 
-void VBoxRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) {
+void VBoxRunner::run(const KRunner::RunnerContext &context, const KRunner::QueryMatch &match)
+{
     Q_UNUSED(context)
     launchCountConfig.writeEntry("launches", launchCountConfig.readEntry("launches", 0) + 1);
     launchCountConfig.writeEntry(match.text(), launchCountConfig.readEntry(match.text(), 0) + 1);
+    QString command;
+#if KRUNNER_VERSION_MAJOR == 6
+    if (match.selectedAction() && match.selectedAction().id() == "headless")
+#else
     if (match.selectedAction() && match.selectedAction()->data() == "headless")
-        KRun::runCommand(QString("VBoxHeadless -s \"%1\"").arg(match.text()), nullptr);
-    else
-        KRun::runCommand(QString("VBoxManage startvm \"%1\"").arg(match.text()), nullptr);
+#endif
+        command = QString("VBoxHeadless -s \"%1\"").arg(match.text());
+    else {
+        command = QString("VBoxManage startvm \"%1\"").arg(match.text());
+    }
+    KIO::CommandLauncherJob *job = new KIO::CommandLauncherJob(command, this);
+    job->start();
 }
 
-bool VBoxRunner::isRunning(const QString &name) {
+bool VBoxRunner::isRunning(const QString &name)
+{
     QProcess vbm;
     vbm.start("VBoxManage", QStringList() << "showvminfo" << "--machinereadable" << name);
 
-    if (!vbm.waitForFinished(2000)) return false;
+    if (!vbm.waitForFinished(2000))
+        return false;
 
     const QByteArray info(vbm.readAllStandardOutput());
-    for (const QByteArray &line: info.split('\n')) {
+    for (const QByteArray &line : info.split('\n')) {
         const QList<QByteArray> data(line.split('"'));
-        if (data[0] == "VMState=") return data[1] != "poweroff";
+        if (data[0] == "VMState=")
+            return data[1] != "poweroff";
     }
     return false;
 }
 
-QList<QAction *> VBoxRunner::actionsForMatch(const Plasma::QueryMatch &match) {
-    Q_UNUSED(match)
-
-    return m_actions;
-}
-
+#include "moc_vbox.cpp"
 #include "vbox.moc"

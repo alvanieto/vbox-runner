@@ -7,8 +7,8 @@ discontinued.
 # Build instructions
 
 ## Prerequisites 
-    * Qt5
-    * KF5
+    * Qt5/KF5
+    * Qt6/KF6
 
 ### Archlinux
     sudo pacman -S cmake extra-cmake-modules
@@ -23,10 +23,11 @@ discontinued.
     sudo dnf install cmake extra-cmake-modules kf5-ki18n-devel kf5-kservice-devel kf5-krunner-devel kf5-ktextwidgets-devel gettext
 
 ## Build
-    1. Configure -> cmake .
+    1. Configure (Qt5) -> cmake .
+    1. Configure (Qt6) -> cmake . -DBUILD_WITH_QT6=ON
     2. Build -> make
     3. Install -> sudo make install
-    4. Restart Krunner. kquitapp5 krunner; kstart5 --windowclass krunner krunner
+    4. Restart Krunner -> kquitapp5 krunner
 
 ## Screenshots
 
